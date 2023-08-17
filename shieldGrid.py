@@ -18,7 +18,7 @@ timeStep = 0.1
 cubes = []
 waves = []
 frameCount = 500
-soundAdjustmentFactor = 1/10
+soundAdjustmentFactor = 0.1
 #energySoundFilePath = "C:\\Users\\ken\\Local-Dev\\projects\\blender\\shieldgrid\\energy.wav"
 #outputFilePath = 'C:\\Users\\ken\\Local-Dev\\projects\\blender\\shieldgrid'
 energySoundFilePath = "/Users/Ken/Local-Dev/miscScripts/blenderAPIprojects/shieldgrid/energy.wav"
@@ -34,15 +34,15 @@ class Wave:
         self.id = uuid.uuid1()
         self.radius = 0
         self.time = 0
-        print('Generating new wave: '+str(self.id))
-        print('   amplitude: ' + str(amplitude))
-        print('   frequency: ' + str(frequency))
-        print('   wavelength: ' + str(wavelength))
-        print('   decay: ' + str(decayrate))
+        print('Generating new wave: {}'.format(self.id))
+        print('   amplitude: {}'.format(amplitude))
+        print('   frequency: {}'.format(frequency))
+        print('   wavelength: {}'.format(wavelength))
+        print('   decay: {}'.format(decayrate))
 
 class CubeContainer:
     def __init__(self, row, column, cubeObj ,soundObj):
-        self.name = "Cube-"+ str(row) + "-" + str(column)
+        self.name = "Cube-{}-{}".format(row,column)
         self.object = cubeObj
         self.soundObj = soundObj
         self.row = row
@@ -78,8 +78,8 @@ def sceneInit():
     print("initializing scene")
     for c in range(0, rows):
         for d in range(0, columns):
-            objName = "Cube-"+ str(c) + "-" + str(d)
-            print("   creating: "+ objName)
+            objName = "Cube-{}-{}".format(c,d)
+            print("   creating: {}".format(objName))
             
             # Cube creation.
             bpy.ops.mesh.primitive_cube_add(location=(2.0*c, 2.0*d, 0))
@@ -172,7 +172,7 @@ waves.append(Wave(location = [0, 0, 0],direction =  [0, 0, -1], amplitude = 5, f
 waves.append(Wave(location = [50, 0, 0],direction =  [0, 0, 1], amplitude = 5, frequency = 1, wavelength = 2, decayrate = 0.1))
 
 for frame in range(0, frameCount):
-    print("creating frame: " + str(frame))
+    print("creating frame: {}".format(frame))
     if frame == 100:
         waves.append(Wave(location = [0, 100, 0],direction =  [1, 0, 1], amplitude = 5, frequency = 0.5, wavelength = 2, decayrate = 0.1))
     bpy.context.scene.frame_set(frame)
