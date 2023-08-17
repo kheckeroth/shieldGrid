@@ -2,6 +2,9 @@ import bpy
 import math
 import uuid
 import copy
+# used to create sci-fi inspired art:
+#           https://www.instagram.com/p/Cc-wWuNozbk/
+
 # run in Terminal:
 #   /Applications/Blender.app/Contents/MacOS/Blender -b -P shieldGrid.py 
 #   "C:\Program Files\Blender Foundation\Blender 2.93\blender.exe" -b -P shieldGrid.py
@@ -11,7 +14,6 @@ objs.remove(objs["Cube"], do_unlink=True)
 
 columns = 100
 rows = 100
-count = rows*columns
 timeStep = 0.1
 cubes = []
 waves = []
@@ -76,8 +78,9 @@ def sceneInit():
     print("initializing scene")
     for c in range(0, rows):
         for d in range(0, columns):
-            print("   creating cube: "+ str(c) + "-" + str(d))
             objName = "Cube-"+ str(c) + "-" + str(d)
+            print("   creating: "+ objName)
+            
             # Cube creation.
             bpy.ops.mesh.primitive_cube_add(location=(2.0*c, 2.0*d, 0))
             cube = bpy.context.object
@@ -85,13 +88,6 @@ def sceneInit():
             cube.dimensions[0] = 2
             cube.dimensions[1] = 2
             cube.dimensions[2] = 0.2
-
-            # bpy.ops.mesh.primitive_cube_add(location=(2.0*c, 2.0*d, 0))
-            # iCube = bpy.context.object
-            # iCube.name = objName
-            # iCube.dimensions[0] = 2
-            # iCube.dimensions[1] = 2
-            # iCube.dimensions[2] = 0.2
             
             bpy.ops.object.speaker_add(location=(2.0*c, 2.0*d, 0))
             speaker = bpy.context.object
@@ -109,13 +105,12 @@ def sceneInit():
             diffuseMaterial.diffuse_color = [0,0,0, 1]
             diffuseMaterial.keyframe_insert(data_path='diffuse_color', frame=1, index=-1)
             # add a emission material
-            emission_material = bpy.data.materials.new(name=objName+"emission")
-            emission_material.use_nodes = True
-            material_output = emission_material.node_tree.nodes.get('Material Output')
-            emission = emission_material.node_tree.nodes.new('ShaderNodeEmission')
-            emission.inputs['Strength'].default_value = 1
-            emission_material.node_tree.links.new(material_output.inputs[0], emission.outputs[0])
-            #iCube.active_material = emission_material
+            # emission_material = bpy.data.materials.new(name=objName+"emission")
+            # emission_material.use_nodes = True
+            # material_output = emission_material.node_tree.nodes.get('Material Output')
+            # emission = emission_material.node_tree.nodes.new('ShaderNodeEmission')
+            # emission.inputs['Strength'].default_value = 1
+            # emission_material.node_tree.links.new(material_output.inputs[0], emission.outputs[0])
 
             cubeTmp = CubeContainer(c,d, cube, speaker)
             cubes.append(cubeTmp)
@@ -141,7 +136,7 @@ def propogateWaves():
             # v = wavelength / T, T = wavelength/ v
             # y = e^(-gamma*t)*A*Cos(omega*t - alpha)
             # http://hyperphysics.phy-astr.gsu.edu/hbase/oscda.html
-            wave.time = wave.time + timeStep
+            wave.time += timeStep
             displacement_x += displacement * wave.direction[0]
             displacement_y += displacement * wave.direction[1]
             displacement_z += displacement * wave.direction[2]
@@ -150,27 +145,22 @@ def propogateWaves():
         cube.object.location[1] = cube.initialPosition[1] + displacement_y
         cube.object.location[2] = cube.initialPosition[2] + displacement_z
 
-        cube.inverseCubeObj.location[0] = cube.initialPosition[0] - displacement_x
-        cube.inverseCubeObj.location[1] = cube.initialPosition[1] - displacement_y
-        cube.inverseCubeObj.location[2] = cube.initialPosition[2] - displacement_z
-
         cube.soundObj.location[0] = cube.initialPosition[0] + displacement_x
         cube.soundObj.location[1] = cube.initialPosition[1] + displacement_y
         cube.soundObj.location[2] = cube.initialPosition[2] + displacement_z
 
         displacement = math.dist([displacement_x, displacement_y, displacement_z], [0,0,0])
         cube.soundObj.data.volume = 1 if displacement*soundAdjustmentFactor > 1 else 0 if displacement*soundAdjustmentFactor < 0.01 else displacement*soundAdjustmentFactor
-        material_strength = displacement
-        if (material_strength) > 0:
-            bpy.data.materials[cube.name+"diff"].diffuse_color = [displacement_x, displacement_y , displacement_z, 1]
-            bpy.data.materials[cube.name+"diff"].keyframe_insert(data_path='diffuse_color')
+        # material_strength = displacement
+        # if (material_strength) > 0:
+        #     bpy.data.materials[cube.name+"diff"].diffuse_color = [displacement_x, displacement_y , displacement_z, 1]
+        #     bpy.data.materials[cube.name+"diff"].keyframe_insert(data_path='diffuse_color')
         #     bpy.data.materials[cube.name].node_tree.nodes["Emission"].inputs[1].default_value =  material_strength
         #     bpy.data.materials[cube.name].node_tree.nodes["Emission"].inputs[1].keyframe_insert(data_path='default_value')
         #     if (cube.row == 0 and cube.column == 0):
         #         print('setting '+cube.name + ' material: '+ str(material_strength))
         cube.object.keyframe_insert(data_path='location')
         cube.soundObj.keyframe_insert(data_path='location')
-        cube.inverseCubeObj.keyframe_insert(data_path='location')
         cube.soundObj.data.keyframe_insert("volume")
 
 configureBlender()
